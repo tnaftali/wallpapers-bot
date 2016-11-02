@@ -12,19 +12,20 @@ Run the script on an image to get a label, E.g.:
 """
 
 import argparse
+import os
 import base64
 
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
 
 
-def main(photo_file):
+def get_labels(photo_file):
     """Run a label request on a single image"""
 
     credentials = GoogleCredentials.get_application_default()
     service = discovery.build('vision', 'v1', credentials=credentials)
 
-    with open(photo_file, 'rb') as image:
+    with open(photo_file, 'r') as image:
         image_content = base64.b64encode(image.read())
         service_request = service.images().annotate(body={
             'requests': [{
@@ -38,15 +39,26 @@ def main(photo_file):
             }]
         })
         response = service_request.execute()
-        print response['responses'][0]['labelAnnotations']
+        # print response['responses'][0]['labelAnnotations']
         for i in range(len(response['responses'][0]['labelAnnotations'])):
             print response['responses'][0]['labelAnnotations'][i]['description']
             # label = response['responses'][i]['labelAnnotations'][i]['description']
             # print label
             # print('Found label: %s for %s' % (label, photo_file))
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('image_file', help='The image you\'d like to label.')
-    args = parser.parse_args()
-    main(args.image_file)
+# if __name__ == '__main__':
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('image_file', help='The image you\'d like to label.')
+#     args = parser.parse_args()
+#     main(args.image_file)
+
+url = '/Users/Toby/Projects/bot/WallpapersBot/resources'
+for file in os.listdir(url):
+    if file.endswith('.jpg'):
+        get_labels(url + '/' + file)
+    print '-------------------------------------'
+
+# file_location = '/Users/Toby/Downloads/dog.jpg'
+# file = open(file_location, 'r')
+# print file
+# main(file_location)

@@ -12,12 +12,11 @@
 # limitations under the License.
 
 import re
-
 from label import main
 
 
 def test_main(resource, capsys):
-    in_file = resource('cat.jpg')
+    in_file = resource('dog.jpg')
 
     main(in_file)
 
