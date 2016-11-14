@@ -21,15 +21,6 @@ def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!")
 
 
-# def send_image(bot, update, args):
-#     name = ' '.join(args)
-#     response = cloudinary.api.resources_by_tag(name)
-#     photos = response['resources']
-#     print photos
-#     for i in range(len(photos)):
-#         bot.sendPhoto(chat_id=update.message.chat_id, photo=photos[i]['secure_url'])
-
-
 def get_images_inline(bot, update):
     query = update.inline_query.query
     if not query:
