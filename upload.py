@@ -3,6 +3,7 @@ import base64
 import cloudinary.uploader, cloudinary.api
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
+import random
 
 cloudinary.config(
     cloud_name='dmyufekev',
@@ -31,7 +32,9 @@ def get_labels(photo_file):
         })
         response = service_request.execute()
         for i in range(len(response['responses'][0]['labelAnnotations'])):
-            labels.append(response['responses'][0]['labelAnnotations'][i]['description'])
+            tag = response['responses'][0]['labelAnnotations'][i]['description']
+            for word in tag.split(' '):
+                labels.append(word)
     return labels
 
 
@@ -39,9 +42,10 @@ url = '/Users/Toby/Projects/bot/WallpapersBot/resources'
 for file in os.listdir(url):
     if file.endswith('.jpg') or file.endswith('.png'):
         full_path = url + '/' + file
-        file_name = file.split('.')[0]
-        print file_name
+        id = str(random.randint(100000, 999999))
         labels = get_labels(full_path)
-        cloudinary.uploader.upload(full_path, public_id=file_name)
+        cloudinary.uploader.upload(full_path, public_id=id)
         for label in labels:
-            result = cloudinary.uploader.add_tag(label, file_name)
+            result = cloudinary.uploader.add_tag(label, id)
+        os.remove(full_path)
+        print file + ' uploaded and deleted'

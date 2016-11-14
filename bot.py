@@ -53,6 +53,7 @@ def get_tags(bot, update, args):
             text = 'Please specify how many tags you want to get'
         response = cloudinary.api.tags()
         tags = response['tags']
+        print len(tags)
         shuffle(tags)
         max = len(tags)
         if count < max:
@@ -91,15 +92,6 @@ def error_callback(bot, update, error):
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
-
-# echo_handler = MessageHandler(Filters.text, echo)
-# dispatcher.add_handler(echo_handler)
-
-# image_handler = CommandHandler('getimage', send_images_inline, pass_args=True)
-# dispatcher.add_handler(image_handler)
-
-# caps_handler = CommandHandler('caps', caps, pass_args=True)
-# dispatcher.add_handler(caps_handler)
 
 inline_images_handler = InlineQueryHandler(get_images_inline)
 dispatcher.add_handler(inline_images_handler)
