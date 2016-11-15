@@ -3,6 +3,11 @@ from telegram import InlineQueryResultPhoto
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler)
 from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 from random import shuffle
+import flask
+
+app = flask.Flask(__name__)
+
+@app.route("/")
 
 cloudinary.config(
     cloud_name='dmyufekev',
