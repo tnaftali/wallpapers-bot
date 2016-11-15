@@ -1,13 +1,8 @@
-from flask import Flask
 import logging, cloudinary, cloudinary.api
 from telegram import InlineQueryResultPhoto
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler)
 from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 from random import shuffle
-# from flask.ext.heroku import Heroku
-
-app = Flask(__name__)
-# app.config['SECRET_KEY'] = "random string"
 
 cloudinary.config(
     cloud_name='dmyufekev',
@@ -22,7 +17,6 @@ dispatcher = updater.dispatcher
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 
-@app.route("/")
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!")
 
