@@ -1,4 +1,4 @@
 cloudinary==1.4.0
 gunicorn==19.6.0
 flask==0.11.1
-python-telegram-bot=5.2.0
+python-telegram-bot==5.2.0
