@@ -31,12 +31,15 @@ def get_images_inline(bot, update):
     results = list()
     for i in range(len(photos)):
         photo = photos[i]['secure_url']
-        print photo
+        arr = photo.split('/upload/')
+        two = arr[1].split('/')[1]
+        one = arr[0] + '/upload/q_30/'
+        thumb = str(one) + str(two)
         results.append(
             InlineQueryResultPhoto(
                 id=i,
                 photo_url=photo,
-                thumb_url=photo
+                thumb_url=thumb
             )
         )
     if len(results) > 0:
