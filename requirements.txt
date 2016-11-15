@@ -1,1 +1,2 @@
 cloudinary==1.4.0
+gunicorn==19.6.0
