@@ -51,15 +51,11 @@ def get_tags(bot, update, args):
             count = int(' '.join(args))
         except:
             text = 'Please specify how many tags you want to get'
-        response = cloudinary.api.tags()
+        response = cloudinary.api.tags(max_results=count)
         tags = response['tags']
-        print len(tags)
         shuffle(tags)
-        max = len(tags)
-        if count < max:
-            max = count
-        for i in range(max):
-            text += tags[i] + '\n'
+        for tag in tags:
+            text += tag + '\n'
         bot.sendMessage(chat_id=update.message.chat_id,  parse_mode='HTML', text=text)
 
 
