@@ -7,8 +7,6 @@ import flask
 
 app = flask.Flask(__name__)
 
-@app.route("/")
-
 cloudinary.config(
     cloud_name='dmyufekev',
     api_key='166958157613447',
@@ -21,6 +19,7 @@ dispatcher = updater.dispatcher
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+@app.route("/")
 
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!")
