@@ -38,6 +38,8 @@ def get_images_inline(bot, update):
         results.append(
             InlineQueryResultPhoto(
                 id=i,
+                photo_height=100,
+                photo_width=100,
                 photo_url=photo,
                 thumb_url=thumb
             )
