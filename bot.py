@@ -18,7 +18,12 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 def start(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!")
+    text = 'This Bot helps you find wallpapers that you like. \n' \
+           "You can search by tag typing '@mobilewallpapersbot' followed by a word, and it " \
+           'will search images tagged with that word. \n' \
+           'You can also use the /tags command to get 5 random tags, or /random to get a random wallpaper. \n' \
+           'This bot uses the Google Cloud Vision API to tag the images.'
+    bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
 
 def get_images_inline(bot, update):
@@ -31,10 +36,7 @@ def get_images_inline(bot, update):
     results = list()
     for i in range(len(photos)):
         photo = photos[i]['secure_url']
-        arr = photo.split('/upload/')
-        two = arr[1].split('/')[1]
-        one = arr[0] + '/upload/q_30/'
-        thumb = str(one) + str(two)
+        thumb = create_thumb(photo)
         results.append(
             InlineQueryResultPhoto(
                 id=i,
@@ -48,20 +50,34 @@ def get_images_inline(bot, update):
         bot.answerInlineQuery(update.inline_query.id, results)
 
 
-def get_tags(bot, update, args):
-    count = 0
+def create_thumb(photo):
+    arr = photo.split('/upload/')
+    two = arr[1].split('/')[1]
+    one = arr[0] + '/upload/q_30/'
+    return str(one) + str(two)
+
+
+def get_tags(bot, update):
+    max = 500
+    count = 5
     text = ''
-    if not None and not '':
-        try:
-            count = int(' '.join(args))
-        except:
-            text = 'Please specify how many tags you want to get'
-        response = cloudinary.api.tags(max_results=count)
-        tags = response['tags']
-        shuffle(tags)
-        for tag in tags:
-            text += tag + '\n'
-        bot.sendMessage(chat_id=update.message.chat_id,  parse_mode='HTML', text=text)
+    response = cloudinary.api.tags(max_results=max)
+    tags = response['tags']
+    shuffle(tags)
+    for i in range(count):
+        text += tags[i] + '\n'
+    bot.sendMessage(chat_id=update.message.chat_id, parse_mode='HTML', text=text)
+
+
+def get_random(bot, update):
+    max = 500
+    count = 5
+    response = cloudinary.api.resources(max_results=max)
+    photos = response['resources']
+    shuffle(photos)
+    results = list()
+    photo = photos[0]['secure_url']
+    bot.sendPhoto(chat_id=update.message.chat_id, photo=photo)
 
 
 def unknown(bot, update):
@@ -97,8 +113,11 @@ dispatcher.add_handler(start_handler)
 inline_images_handler = InlineQueryHandler(get_images_inline)
 dispatcher.add_handler(inline_images_handler)
 
-tags_handler = CommandHandler('tags', get_tags, pass_args=True)
+tags_handler = CommandHandler('tags', get_tags)
 dispatcher.add_handler(tags_handler)
+
+random_handler = CommandHandler('random', get_random)
+dispatcher.add_handler(random_handler)
 
 unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
