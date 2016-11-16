@@ -18,10 +18,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 def start(bot, update):
-    text = 'This Bot helps you find wallpapers that you like. \n' \
-           "You can search by tag typing '@mobilewallpapersbot' followed by a word, and it " \
+    text = 'This Bot helps you find wallpapers that you like. \n \n' \
+           'You can search by tag typing "@mobilewallpapersbot" followed by a word, and it ' \
            'will search images tagged with that word. \n' \
-           'You can also use the /tags command to get 5 random tags, or /random to get a random wallpaper. \n' \
+           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper. \n' \
            'This bot uses the Google Cloud Vision API to tag the images.'
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
@@ -33,6 +33,8 @@ def get_images_inline(bot, update):
     tag = str(query)
     response = cloudinary.api.resources_by_tag(tag)
     photos = response['resources']
+    if photos is None or len(photos) == 0:
+        bot.answerInlineQuery(update.inline_query.id, results)
     results = list()
     for i in range(len(photos)):
         photo = photos[i]['secure_url']
@@ -71,13 +73,18 @@ def get_tags(bot, update):
 
 def get_random(bot, update):
     max = 500
-    count = 5
     response = cloudinary.api.resources(max_results=max)
     photos = response['resources']
     shuffle(photos)
-    results = list()
     photo = photos[0]['secure_url']
     bot.sendPhoto(chat_id=update.message.chat_id, photo=photo)
+
+
+def help(bot, update):
+    text = 'You can search by tag typing "@mobilewallpapersbot" followed by a word, and it ' \
+           'will search images tagged with that word. \n \n' \
+           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper. \n'
+    bot.sendMessage(chat_id=update.message.chat_id, parse_mode='HTML', text=text)
 
 
 def unknown(bot, update):
@@ -115,6 +122,9 @@ dispatcher.add_handler(inline_images_handler)
 
 tags_handler = CommandHandler('tags', get_tags)
 dispatcher.add_handler(tags_handler)
+
+help_handler = CommandHandler('help', help)
+dispatcher.add_handler(help_handler)
 
 random_handler = CommandHandler('random', get_random)
 dispatcher.add_handler(random_handler)
