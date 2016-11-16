@@ -16,6 +16,8 @@ dispatcher = updater.dispatcher
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+max = 500
+
 
 def start(bot, update):
     text = 'This Bot helps you find wallpapers that you like. \n \n' \
@@ -29,12 +31,11 @@ def start(bot, update):
 def get_images_inline(bot, update):
     query = update.inline_query.query
     if not query:
-        return
-    tag = str(query)
-    response = cloudinary.api.resources_by_tag(tag)
+        response = cloudinary.api.resources(max_results=max)
+    else:
+        tag = str(query)
+        response = cloudinary.api.resources_by_tag(tag, max_results=max)
     photos = response['resources']
-    if photos is None or len(photos) == 0:
-        bot.answerInlineQuery(update.inline_query.id, results)
     results = list()
     for i in range(len(photos)):
         photo = photos[i]['secure_url']
@@ -60,7 +61,6 @@ def create_thumb(photo):
 
 
 def get_tags(bot, update):
-    max = 500
     count = 5
     text = ''
     response = cloudinary.api.tags(max_results=max)
@@ -72,7 +72,6 @@ def get_tags(bot, update):
 
 
 def get_random(bot, update):
-    max = 500
     response = cloudinary.api.resources(max_results=max)
     photos = response['resources']
     shuffle(photos)
