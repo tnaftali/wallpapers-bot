@@ -17,6 +17,7 @@ dispatcher = updater.dispatcher
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 max = 500
+telegram_max = 50
 
 
 def start(bot, update):
@@ -37,7 +38,7 @@ def get_images_inline(bot, update):
         response = cloudinary.api.resources_by_tag(tag, max_results=max)
     photos = response['resources']
     results = list()
-    for i in range(len(photos)):
+    for i in range(telegram_max):
         photo = photos[i]['secure_url']
         thumb = create_thumb(photo)
         results.append(
