@@ -34,7 +34,7 @@ def start(bot, update):
 def get_images_inline(bot, update):
     query = update.inline_query.query
     if not query:
-        response = cloudinary.api.resources(tags=image_tag, max_results=max)
+        response = cloudinary.api.resources_by_tag(image_tag, max_results=max)
     else:
         tag = str(query)
         response = cloudinary.api.resources_by_tag(tag, max_results=max)
