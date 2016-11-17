@@ -1,5 +1,5 @@
 import logging, cloudinary, cloudinary.api
-from telegram import InlineQueryResultPhoto
+from telegram import InlineQueryResultPhoto, InputTextMessageContent
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler)
 from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 from random import shuffle
@@ -18,6 +18,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 max = 500
 telegram_max = 50
+image_tag = 'wallpaper_image'
+not_found_image = 'http://res.cloudinary.com/dmyufekev/image/upload/v1479347414/resources/not_found.png'
 
 
 def start(bot, update):
@@ -32,25 +34,41 @@ def start(bot, update):
 def get_images_inline(bot, update):
     query = update.inline_query.query
     if not query:
-        response = cloudinary.api.resources(max_results=max)
+        response = cloudinary.api.resources(tags=image_tag, max_results=max)
     else:
         tag = str(query)
         response = cloudinary.api.resources_by_tag(tag, max_results=max)
     photos = response['resources']
+    shuffle(photos)
     results = list()
-    for i in range(telegram_max):
+    i = 0
+    while i < len(photos) and i < telegram_max:
         photo = photos[i]['secure_url']
+        id = photos[i]['public_id']
         thumb = create_thumb(photo)
         results.append(
             InlineQueryResultPhoto(
-                id=i,
-                photo_height=100,
-                photo_width=100,
+                id=id,
                 photo_url=photo,
-                thumb_url=thumb
+                thumb_url=thumb,
+                photo_height=100,
+                photo_width=100
             )
         )
+        i += 1
     if len(results) > 0:
+        bot.answerInlineQuery(update.inline_query.id, results)
+    else:
+        results.append(
+            InlineQueryResultPhoto(
+                id='123123',
+                photo_url=not_found_image,
+                thumb_url=not_found_image,
+                input_message_content=InputTextMessageContent(
+                    message_text="There isn't any image containing that tag"
+                )
+            )
+        )
         bot.answerInlineQuery(update.inline_query.id, results)
 
 
