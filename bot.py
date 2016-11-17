@@ -10,7 +10,7 @@ cloudinary.config(
     api_secret='086xPNR_jROA04gcDSdRnqxf2iE'
 )
 
-token = '287909822:AAGnrEfRDaVLuqM-IqKqW-Ph1os2rdLXZoE'
+token = '247049587:AAFp9TUrYCNj58VuN8lwhnr2qu6u0wCVyK4'
 updater = Updater(token=token)
 dispatcher = updater.dispatcher
 
