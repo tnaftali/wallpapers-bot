@@ -1,8 +1,11 @@
-import logging, cloudinary, cloudinary.api
-from telegram import InlineQueryResultPhoto, InputTextMessageContent
+import logging
+import cloudinary
+import cloudinary.api
+import cloudinary.uploader
+from telegram import (InlineQueryResultPhoto, InputTextMessageContent)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler)
 from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
-from random import shuffle
+from random import shuffle, randint
 
 cloudinary.config(
     cloud_name='dmyufekev',
@@ -10,24 +13,27 @@ cloudinary.config(
     api_secret='086xPNR_jROA04gcDSdRnqxf2iE'
 )
 
-token = '247049587:AAFp9TUrYCNj58VuN8lwhnr2qu6u0wCVyK4'
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.ERROR)
+
+prod_token = '247049587:AAFp9TUrYCNj58VuN8lwhnr2qu6u0wCVyK4'
+dev_token = '270159638:AAGWwsiZnC8GDnr70hR4xaLuLJ1BmeeXbsY'
+
+token = prod_token
 updater = Updater(token=token)
 dispatcher = updater.dispatcher
-
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
+handlers = []
 max = 500
 telegram_max = 50
 image_tag = 'wallpaper_image'
 not_found_image = 'http://res.cloudinary.com/dmyufekev/image/upload/v1479347414/resources/not_found.png'
+image_types = ['image/jpeg']
+review_tag = 'REVIEW'
 
 
 def start(bot, update):
-    text = 'This Bot helps you find wallpapers that you like. \n \n' \
-           'You can search by tag typing "@mobilewallpapersbot" followed by a word, and it ' \
-           'will search images tagged with that word. \n' \
-           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper. \n' \
-           'This bot uses the Google Cloud Vision API to tag the images.'
+    text = 'You can start using this bot searching by tag typing "@wallpaperss_bot" followed by a word, and it ' \
+           'will search images tagged with that word.\n \n'\
+           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper.'
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
 
@@ -91,7 +97,7 @@ def get_tags(bot, update):
 
 
 def get_random(bot, update):
-    response = cloudinary.api.resources(max_results=max)
+    response = cloudinary.api.resources_by_tag(image_tag, max_results=max)
     photos = response['resources']
     shuffle(photos)
     photo = photos[0]['secure_url']
@@ -100,13 +106,14 @@ def get_random(bot, update):
 
 def help(bot, update):
     text = 'You can search by tag typing "@mobilewallpapersbot" followed by a word, and it ' \
-           'will search images tagged with that word. \n \n' \
-           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper. \n'
+           'will search images tagged with that word.\n \n' \
+           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper.'
     bot.sendMessage(chat_id=update.message.chat_id, parse_mode='HTML', text=text)
 
 
 def unknown(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text='Sorry, I didn\'t understand that command.')
+    text = 'Sorry, I didn\'t understand that command. To get help on how to use the bot type the /help command.'
+    bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
 
 def error_callback(bot, update, error):
@@ -132,25 +139,47 @@ def error_callback(bot, update, error):
         print error
 
 
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
+def upload_image(bot, update):
+    text = 'Please send me the image you want to upload.\n In order to work it must be uploaded as file ' \
+           'and not as image.\n The maximum permitted size is 5 MB.'
+    bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
-inline_images_handler = InlineQueryHandler(get_images_inline)
-dispatcher.add_handler(inline_images_handler)
 
-tags_handler = CommandHandler('tags', get_tags)
-dispatcher.add_handler(tags_handler)
+def handle_file(bot, update):
+    file = update.message.document
+    text_ok = 'Your image was uploaded successfully!\n \n It will be reviewed to be added to the wallpapers collection'
+    type_error = 'The file must be an image (PNG, JPG, JPEG)'
+    upload_error = 'There was an error uploading the image, please try again.'
+    if image_types.__contains__(file.mime_type):
+        try:
+            photo = bot.getFile(file_id=file.file_id)
+            id = 'img_' + str(randint(100000, 999999))
+            cloudinary.uploader.upload(photo.file_path, public_id=id)
+            cloudinary.uploader.add_tag(review_tag, id)
+            bot.sendMessage(chat_id=update.message.chat_id, text=text_ok)
+        except:
+            bot.sendMessage(chat_id=update.message.chat_id, text=type_error)
+    else:
+        bot.sendMessage(chat_id=update.message.chat_id, text=upload_error)
 
-help_handler = CommandHandler('help', help)
-dispatcher.add_handler(help_handler)
 
-random_handler = CommandHandler('random', get_random)
-dispatcher.add_handler(random_handler)
+def add_handlers():
+    handlers.append(CommandHandler('start', start))
+    handlers.append(CommandHandler('tags', get_tags))
+    handlers.append(CommandHandler('help', help))
+    handlers.append(CommandHandler('random', get_random))
+    handlers.append(CommandHandler('submit', upload_image))
+    handlers.append(InlineQueryHandler(get_images_inline))
+    handlers.append(MessageHandler(Filters.command, unknown))
+    handlers.append(MessageHandler(Filters.document, handle_file))
 
-unknown_handler = MessageHandler(Filters.command, unknown)
-dispatcher.add_handler(unknown_handler)
+    for handler in handlers:
+        dispatcher.add_handler(handler)
 
-dispatcher.add_error_handler(error_callback)
 
-updater.start_polling()
-updater.idle()
+def main():
+    add_handlers()
+    updater.start_polling()
+
+
+main()
