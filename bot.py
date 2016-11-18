@@ -18,7 +18,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 prod_token = '247049587:AAFp9TUrYCNj58VuN8lwhnr2qu6u0wCVyK4'
 dev_token = '270159638:AAGWwsiZnC8GDnr70hR4xaLuLJ1BmeeXbsY'
 
-token = prod_token
+token = dev_token
 updater = Updater(token=token)
 dispatcher = updater.dispatcher
 handlers = []
@@ -32,7 +32,7 @@ review_tag = 'REVIEW'
 
 def start(bot, update):
     text = 'You can start using this bot searching by tag typing "@wallpaperss_bot" followed by a word, and it ' \
-           'will search images tagged with that word.\n \n'\
+           'will search images tagged with that word.\n\n'\
            'You can also use the /tags command to get five random tags, or /random to get a random wallpaper.'
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
@@ -106,7 +106,7 @@ def get_random(bot, update):
 
 def help(bot, update):
     text = 'You can search by tag typing "@mobilewallpapersbot" followed by a word, and it ' \
-           'will search images tagged with that word.\n \n' \
+           'will search images tagged with that word.\n\n' \
            'You can also use the /tags command to get five random tags, or /random to get a random wallpaper.'
     bot.sendMessage(chat_id=update.message.chat_id, parse_mode='HTML', text=text)
 
@@ -140,14 +140,14 @@ def error_callback(bot, update, error):
 
 
 def upload_image(bot, update):
-    text = 'Please send me the image you want to upload.\n In order to work it must be uploaded as file ' \
-           'and not as image.\n The maximum permitted size is 5 MB.'
+    text = 'Please send me the image you want to upload.\nIn order to work it must be uploaded as file ' \
+           'and not as image.\nThe maximum permitted size is 5 MB.'
     bot.sendMessage(chat_id=update.message.chat_id, text=text)
 
 
 def handle_file(bot, update):
     file = update.message.document
-    text_ok = 'Your image was uploaded successfully!\n \n It will be reviewed to be added to the wallpapers collection'
+    text_ok = 'Your image was uploaded successfully!\n\n It will be reviewed to be added to the wallpapers collection'
     type_error = 'The file must be an image (PNG, JPG, JPEG)'
     upload_error = 'There was an error uploading the image, please try again.'
     if image_types.__contains__(file.mime_type):
@@ -163,14 +163,27 @@ def handle_file(bot, update):
         bot.sendMessage(chat_id=update.message.chat_id, text=upload_error)
 
 
+def handle_command(bot, update):
+    command = update.message.text
+    f(command, bot, update)
+
+
+def f(command, bot, update):
+    if command == '/start':
+        start(bot, update)
+    elif command == '/tags':
+        get_tags(bot, update)
+    elif command == '/help':
+        help(bot, update)
+    elif command == '/random':
+        get_random(bot, update)
+    elif command == '/submit':
+        upload_image(bot, update)
+
+
 def add_handlers():
-    handlers.append(CommandHandler('start', start))
-    handlers.append(CommandHandler('tags', get_tags))
-    handlers.append(CommandHandler('help', help))
-    handlers.append(CommandHandler('random', get_random))
-    handlers.append(CommandHandler('submit', upload_image))
     handlers.append(InlineQueryHandler(get_images_inline))
-    handlers.append(MessageHandler(Filters.command, unknown))
+    handlers.append(MessageHandler(Filters.command, handle_command))
     handlers.append(MessageHandler(Filters.document, handle_file))
 
     for handler in handlers:
