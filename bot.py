@@ -6,49 +6,42 @@ from telegram import (InlineQueryResultPhoto, InputTextMessageContent)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler)
 from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 from random import shuffle, randint
+from TextProvider import TextProvider
+from ConfigurationProvider import ConfigurationProvider
+import threading
+
+config = ConfigurationProvider()
+
+updater = Updater(token=config.token)
+dispatcher = updater.dispatcher
+handlers = []
+dict = dict()
 
 cloudinary.config(
-    cloud_name='dmyufekev',
-    api_key='166958157613447',
-    api_secret='086xPNR_jROA04gcDSdRnqxf2iE'
+    cloud_name=config.cloud_name,
+    api_key=config.api_key,
+    api_secret=config.api_secret
 )
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.ERROR)
 
-prod_token = '247049587:AAFp9TUrYCNj58VuN8lwhnr2qu6u0wCVyK4'
-dev_token = '270159638:AAGWwsiZnC8GDnr70hR4xaLuLJ1BmeeXbsY'
-
-token = dev_token
-updater = Updater(token=token)
-dispatcher = updater.dispatcher
-handlers = []
-max = 500
-telegram_max = 50
-image_tag = 'wallpaper_image'
-not_found_image = 'http://res.cloudinary.com/dmyufekev/image/upload/v1479347414/resources/not_found.png'
-image_types = ['image/jpeg']
-review_tag = 'REVIEW'
-
 
 def start(bot, update):
-    text = 'You can start using this bot searching by tag typing "@wallpaperss_bot" followed by a word, and it ' \
-           'will search images tagged with that word.\n\n'\
-           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper.'
-    bot.sendMessage(chat_id=update.message.chat_id, text=text)
+    bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.start)
 
 
 def get_images_inline(bot, update):
     query = update.inline_query.query
     if not query:
-        response = cloudinary.api.resources_by_tag(image_tag, max_results=max)
+        response = cloudinary.api.resources_by_tag(config.image_tag, max_results=config.max)
     else:
         tag = str(query)
-        response = cloudinary.api.resources_by_tag(tag, max_results=max)
+        response = cloudinary.api.resources_by_tag(tag, max_results=config.max)
     photos = response['resources']
     shuffle(photos)
     results = list()
     i = 0
-    while i < len(photos) and i < telegram_max:
+    while i < len(photos) and i < config.telegram_max:
         photo = photos[i]['secure_url']
         id = photos[i]['public_id']
         thumb = create_thumb(photo)
@@ -57,8 +50,8 @@ def get_images_inline(bot, update):
                 id=id,
                 photo_url=photo,
                 thumb_url=thumb,
-                photo_height=100,
-                photo_width=100
+                photo_height=400,
+                photo_width=200
             )
         )
         i += 1
@@ -68,8 +61,8 @@ def get_images_inline(bot, update):
         results.append(
             InlineQueryResultPhoto(
                 id='123123',
-                photo_url=not_found_image,
-                thumb_url=not_found_image,
+                photo_url=config.not_found_image,
+                thumb_url=config.not_found_image,
                 input_message_content=InputTextMessageContent(
                     message_text="There isn't any image containing that tag"
                 )
@@ -88,7 +81,7 @@ def create_thumb(photo):
 def get_tags(bot, update):
     count = 5
     text = ''
-    response = cloudinary.api.tags(max_results=max)
+    response = cloudinary.api.tags(max_results=config.max)
     tags = response['tags']
     shuffle(tags)
     for i in range(count):
@@ -97,7 +90,7 @@ def get_tags(bot, update):
 
 
 def get_random(bot, update):
-    response = cloudinary.api.resources_by_tag(image_tag, max_results=max)
+    response = cloudinary.api.resources_by_tag(config.image_tag, max_results=config.max)
     photos = response['resources']
     shuffle(photos)
     photo = photos[0]['secure_url']
@@ -105,15 +98,11 @@ def get_random(bot, update):
 
 
 def help(bot, update):
-    text = 'You can search by tag typing "@mobilewallpapersbot" followed by a word, and it ' \
-           'will search images tagged with that word.\n\n' \
-           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper.'
-    bot.sendMessage(chat_id=update.message.chat_id, parse_mode='HTML', text=text)
+    bot.sendMessage(chat_id=update.message.chat_id, parse_mode='HTML', text=TextProvider.help)
 
 
 def unknown(bot, update):
-    text = 'Sorry, I didn\'t understand that command. To get help on how to use the bot type the /help command.'
-    bot.sendMessage(chat_id=update.message.chat_id, text=text)
+    bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.unknown)
 
 
 def error_callback(bot, update, error):
@@ -140,32 +129,46 @@ def error_callback(bot, update, error):
 
 
 def upload_image(bot, update):
-    text = 'Please send me the image you want to upload.\nIn order to work it must be uploaded as file ' \
-           'and not as image.\nThe maximum permitted size is 5 MB.'
-    bot.sendMessage(chat_id=update.message.chat_id, text=text)
+    bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload)
 
 
 def handle_file(bot, update):
     file = update.message.document
-    text_ok = 'Your image was uploaded successfully!\n\n It will be reviewed to be added to the wallpapers collection'
-    type_error = 'The file must be an image (PNG, JPG, JPEG)'
-    upload_error = 'There was an error uploading the image, please try again.'
-    if image_types.__contains__(file.mime_type):
+    if config.image_types.__contains__(file.mime_type):
         try:
             photo = bot.getFile(file_id=file.file_id)
             id = 'img_' + str(randint(100000, 999999))
             cloudinary.uploader.upload(photo.file_path, public_id=id)
-            cloudinary.uploader.add_tag(review_tag, id)
-            bot.sendMessage(chat_id=update.message.chat_id, text=text_ok)
+            cloudinary.uploader.add_tag(config.review_tag, id)
+            bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload_ok)
         except:
-            bot.sendMessage(chat_id=update.message.chat_id, text=type_error)
+            bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload_type_error)
     else:
-        bot.sendMessage(chat_id=update.message.chat_id, text=upload_error)
+        bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload_unknown_error)
 
 
 def handle_command(bot, update):
     command = update.message.text
-    f(command, bot, update)
+    key = (command, update.message.from_user.username)
+    map_command(key)
+    if not spam(key):
+        f(command, bot, update)
+
+
+def map_command(key):
+    if key in dict:
+        dict[key] += 1
+    else:
+        dict[key] = 0
+
+
+def spam(key):
+    return dict[key] > 10
+
+
+def empty_dictionary():
+    dict.clear()
+    threading.Timer(60.0, empty_dictionary).start()
 
 
 def f(command, bot, update):
@@ -191,8 +194,9 @@ def add_handlers():
 
 
 def main():
+    empty_dictionary()
     add_handlers()
     updater.start_polling()
-
+    updater.idle()
 
 main()
