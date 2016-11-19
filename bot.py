@@ -142,9 +142,9 @@ def handle_file(bot, update):
             cloudinary.uploader.add_tag(config.review_tag, id)
             bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload_ok)
         except:
-            bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload_type_error)
+            bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload_unknown_error)
     else:
-        bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload_unknown_error)
+        bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.upload_type_error)
 
 
 def handle_command(bot, update):

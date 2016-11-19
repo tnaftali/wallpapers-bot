@@ -1,11 +1,13 @@
 class TextProvider:
     start = 'You can start using this bot searching by tag typing "@wallpaperss_bot" followed by a word, and it ' \
-           'will search images tagged with that word.\n\nYou can also use the /tags command to get' \
-            ' five random tags, or /random to get a random wallpaper.'
+           'will search images tagged with that word.\n\nYou can also use the /tags command to get five random tags,' \
+            ' /random to get a random wallpaper, or /submit to submit an image to be reviewed and added to the' \
+            ' wallpapers collection.'
 
     help = 'You can search by tag typing "@wallpaperss_bot" followed by a word, and it ' \
            'will search images tagged with that word.\n\n' \
-           'You can also use the /tags command to get five random tags, or /random to get a random wallpaper.'
+           'You can also use the /tags command to get five random tags, /random to get a random wallpaper, or /submit' \
+           ' to submit an image to be reviewed and added to the wallpapers collection.'
 
     unknown = 'Sorry, I didn\'t understand that command. To get help on how to use the bot type the /help command.'
 
