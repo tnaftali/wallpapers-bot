@@ -5,7 +5,7 @@ class ConfigurationProvider:
     def __init__(self):
         config_helper = ConfigurationHelper()
         config = config_helper.config_section_map('Config')
-        self.token = config.get('dev_token')
+        self.token = config.get('prod_token')
         self.image_tag = config.get('image_tag')
         self.telegram_max = int(config.get('telegram_max'))
         self.not_found_image = config.get('not_found_image')
