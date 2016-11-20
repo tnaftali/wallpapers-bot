@@ -25,3 +25,5 @@ class TextProvider:
     upload_type_error = 'The file must be an image (JPG, JPEG, or PNG).'
 
     upload_unknown_error = 'There was an error uploading the image, please try again.'
+
+    not_found = 'There isn\'t any image tagged with that word'

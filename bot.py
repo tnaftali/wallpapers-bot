@@ -3,7 +3,7 @@ import cloudinary
 import cloudinary.api
 import cloudinary.uploader
 from telegram import (InlineQueryResultPhoto, InputTextMessageContent)
-from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler)
+from telegram.ext import (Updater, MessageHandler, Filters, InlineQueryHandler)
 from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 from random import shuffle, randint
 from TextProvider import TextProvider
@@ -64,7 +64,7 @@ def get_images_inline(bot, update):
                 photo_url=config.not_found_image,
                 thumb_url=config.not_found_image,
                 input_message_content=InputTextMessageContent(
-                    message_text="There isn't any image containing that tag"
+                    message_text=TextProvider.not_found
                 )
             )
         )
