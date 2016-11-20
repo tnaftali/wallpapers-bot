@@ -9,7 +9,7 @@ class TextProvider:
 
     help = 'You can search wallpapers by typing "@wallpaperss_bot", that will show you the preview of ' \
            'some wallpapers. You can also type a word after that, and it will search and show you the ' \
-           'preview of wallpapers tagged with that word.\nYou can then tap a wallpaper preview to get the full' \
+           'preview of wallpapers tagged with that word.\nYou can then tap a wallpaper preview to get the full ' \
            'wallpaper.\n\n' \
            'You can also use the /tags command to get some random tags that you could use to search,' \
            ' /random to get a random wallpaper, or /submit to submit an image to be reviewed and added to the' \
