@@ -1,5 +1,5 @@
 class TextProvider:
-    start = 'You can start using this bot by typing "@wallpaperss_bot" (without sending), that will show you the preview of ' \
+    start = 'You can start using this bot by typing "@wallpaperss_bot" (without hitting send), that will show you the preview of ' \
             'some wallpapers. You can also type a word after that, and it will search and show you the ' \
             'preview of wallpapers tagged with that word.\nYou can then tap a wallpaper preview to get the full ' \
             'wallpaper.\n\n' \
@@ -7,7 +7,7 @@ class TextProvider:
             ' /random to get a random wallpaper, or /submit to submit an image to be reviewed and added to the' \
             ' wallpapers collection.'
 
-    help = 'You can search wallpapers by typing "@wallpaperss_bot" (without sending), that will show you the preview of ' \
+    help = 'You can search wallpapers by typing "@wallpaperss_bot" (without hitting send), that will show you the preview of ' \
            'some wallpapers. You can also type a word after that, and it will search and show you the ' \
            'preview of wallpapers tagged with that word.\nYou can then tap a wallpaper preview to get the full ' \
            'wallpaper.\n\n' \
