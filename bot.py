@@ -30,13 +30,17 @@ def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text=TextProvider.start)
 
 
+def get_by_tag(tag):
+    return cloudinary.api.resources_by_tag(tag, max_results=config.max)
+
+
 def get_images_inline(bot, update):
     query = update.inline_query.query
     if not query:
-        response = cloudinary.api.resources_by_tag(config.image_tag, max_results=config.max)
+        response = get_by_tag(config.image_tag)
     else:
         tag = str(query)
-        response = cloudinary.api.resources_by_tag(tag, max_results=config.max)
+        response = get_by_tag(tag)
     photos = response['resources']
     shuffle(photos)
     results = list()
@@ -44,7 +48,7 @@ def get_images_inline(bot, update):
     while i < len(photos) and i < config.telegram_max:
         photo = photos[i]['secure_url']
         id = photos[i]['public_id']
-        thumb = create_thumb(photo)
+        thumb = get_thumb(photo)
         results.append(
             InlineQueryResultPhoto(
                 id=id,
@@ -71,7 +75,7 @@ def get_images_inline(bot, update):
         bot.answerInlineQuery(update.inline_query.id, results)
 
 
-def create_thumb(photo):
+def get_thumb(photo):
     arr = photo.split('/upload/')
     two = arr[1].split('/')[1]
     one = arr[0] + '/upload/q_30/'
@@ -90,7 +94,7 @@ def get_tags(bot, update):
 
 
 def get_random(bot, update):
-    response = cloudinary.api.resources_by_tag(config.image_tag, max_results=config.max)
+    response = get_by_tag(config.image_tag)
     photos = response['resources']
     shuffle(photos)
     photo = photos[0]['secure_url']
@@ -152,7 +156,7 @@ def handle_command(bot, update):
     key = (command, update.message.from_user.username)
     map_command(key)
     if not spam(key):
-        f(command, bot, update)
+        handle_function(command, bot, update)
 
 
 def map_command(key):
@@ -171,7 +175,7 @@ def empty_dictionary():
     threading.Timer(60.0, empty_dictionary).start()
 
 
-def f(command, bot, update):
+def handle_function(command, bot, update):
     if command == '/start':
         start(bot, update)
     elif command == '/tags':
@@ -182,6 +186,8 @@ def f(command, bot, update):
         get_random(bot, update)
     elif command == '/submit':
         upload_image(bot, update)
+    else:
+        unknown(bot, update)
 
 
 def add_handlers():
